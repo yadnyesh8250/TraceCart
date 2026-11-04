@@ -1,10 +1,13 @@
-# TraceCart
+# TraceRoyale (repository: TraceCart)
 
-Project repository for TraceCart.
+Creator-first AI asset licensing, participating-application usage reporting, royalty accounting, lineage, and settlement orchestration.
+
+The product brief was provided as “TraceRoyale.” This GitHub repository is named `TraceCart`; confirm which name should be used publicly.
 
 ## Documentation
 
-- [Requirements overview](docs/requirements/README.md)
-- [Requirements specification](docs/requirements/requirements.md)
+- [Problem statement](docs/requirements/problem-statement.md)
+- [Product requirements specification](docs/requirements/requirements.md)
+- [Research and design notes](docs/research/research-and-design-notes.md)
 
-> **Project scope is not yet defined.** The upstream repository was empty when initialized. Product-specific requirements are intentionally pending a project description so the specification does not invent functionality.
+Requirements distinguish the user's proposed product capabilities from engineering safeguards and recommendations. The product does not claim universal use discovery or causal proof of model training/output influence. Usage is reported by participating applications.
