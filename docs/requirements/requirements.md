@@ -72,9 +72,9 @@ This phasing is a delivery recommendation, not a change to the broader concept b
 
 | ID | Priority | Requirement | Acceptance criteria |
 |---|---|---|---|
-| FR-030 | P0 | The system shall create a checkout/payment request for any required upfront fee. | The payment request references the licence request/version, currency, amount, and idempotency key. |
-| FR-031 | P0 | Licence activation shall require server-verified successful payment when the accepted terms require upfront payment. | A client redirect or client-provided status cannot activate a licence; backend verification is required. |
-| FR-032 | P0 | The system shall track payment states, including created, pending, completed, failed, refunded, and disputed where supported. | Each transition records provider reference, timestamp, and source event; invalid transitions are rejected. |
+| FR-030 | P1 | The system should create a checkout/payment request for any required upfront fee. | The payment request references the licence request/version, currency, amount, and idempotency key. |
+| FR-031 | P1 | Licence activation shall require server-verified successful payment when the accepted terms require upfront payment. | A client redirect or client-provided status cannot activate a licence; backend verification is required. |
+| FR-032 | P1 | The system should track payment states, including created, pending, completed, failed, refunded, and disputed where supported. | Each transition records provider reference, timestamp, and source event; invalid transitions are rejected. |
 | FR-033 | P1 | The system should support PayPal Orders for checkout, subject to provider account configuration and availability. | Sandbox transactions cover create, approve, capture, failure, refund, and reconciliation paths before live use. |
 
 ### E. Usage-event ingestion
