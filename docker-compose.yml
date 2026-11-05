@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tracecart
+      POSTGRES_USER: tracecart
+      POSTGRES_PASSWORD: tracecart_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - tracecart_pg:/var/lib/postgresql/data
+
+volumes:
+  tracecart_pg:

@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CREATOR
+  LICENSEE
+  ADMIN
+}
+
+enum AssetStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum OfferStatus {
+  DRAFT
+  PUBLISHED
+  PAUSED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVOKED
+}
+
+enum UsageStatus {
+  ACCEPTED
+  REJECTED
+  DISPUTED
+}
+
+enum LedgerType {
+  ROYALTY_CREDIT
+  ADJUSTMENT_CREDIT
+  ADJUSTMENT_DEBIT
+  PAYOUT
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  assets       Asset[]  @relation("CreatorAssets")
+  offers       LicenseOffer[]
+  requests     LicenseRequest[] @relation("LicenseeRequests")
+  applications Application[]
+  ledger       LedgerEntry[]
+}
+
+model Asset {
+  id          String      @id @default(cuid())
+  creatorId   String
+  creator     User        @relation("CreatorAssets", fields: [creatorId], references: [id])
+  title       String
+  description String      @default("")
+  mimeType    String
+  fileName    String
+  storageKey  String
+  sizeBytes   Int
+  sha256      String
+  status      AssetStatus @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  offers      LicenseOffer[]
+  usageEvents UsageEvent[]
+
+  @@index([creatorId, createdAt])
+  @@index([sha256])
+}
+
+model LicenseOffer {
+  id          String      @id @default(cuid())
+  creatorId   String
+  creator     User        @relation(fields: [creatorId], references: [id])
+  assetId     String
+  asset       Asset       @relation(fields: [assetId], references: [id])
+  version     Int         @default(1)
+  status      OfferStatus @default(DRAFT)
+  usageType   String
+  terms       String
+  perUseFee   Decimal     @db.Decimal(12, 2)
+  currency    String      @default("USD")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  requests    LicenseRequest[]
+
+  @@index([creatorId, status])
+  @@index([assetId, version])
+}
+
+model LicenseRequest {
+  id           String        @id @default(cuid())
+  offerId      String
+  offer        LicenseOffer  @relation(fields: [offerId], references: [id])
+  licenseeId   String
+  licensee     User          @relation("LicenseeRequests", fields: [licenseeId], references: [id])
+  applicationId String?
+  application  Application?  @relation(fields: [applicationId], references: [id])
+  intendedUse  String
+  campaignRef  String        @default("")
+  status       RequestStatus @default(PENDING)
+  decidedAt    DateTime?
+  createdAt    DateTime      @default(now())
+  events       UsageEvent[]
+
+  @@index([licenseeId, status])
+  @@index([offerId, status])
+}
+
+model Application {
+  id          String   @id @default(cuid())
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id])
+  name        String
+  keyHash     String   @unique
+  keyPrefix   String
+  revokedAt   DateTime?
+  createdAt   DateTime @default(now())
+  requests    LicenseRequest[]
+  usageEvents UsageEvent[]
+
+  @@index([ownerId])
+}
+
+model UsageEvent {
+  id             String      @id @default(cuid())
+  externalEventId String
+  applicationId  String
+  application    Application @relation(fields: [applicationId], references: [id])
+  requestId      String
+  request        LicenseRequest @relation(fields: [requestId], references: [id])
+  assetId        String
+  asset          Asset       @relation(fields: [assetId], references: [id])
+  usageType      String
+  campaignRef    String      @default("")
+  reportedAt     DateTime
+  receivedAt     DateTime    @default(now())
+  status         UsageStatus @default(ACCEPTED)
+  royaltyAmount  Decimal     @db.Decimal(12, 2)
+  currency       String
+  rejectionReason String?
+  ledgerEntry    LedgerEntry?
+
+  @@unique([applicationId, externalEventId])
+  @@index([assetId, reportedAt])
+  @@index([requestId, reportedAt])
+}
+
+model LedgerEntry {
+  id             String      @id @default(cuid())
+  idempotencyKey String      @unique
+  userId         String
+  user           User        @relation(fields: [userId], references: [id])
+  usageEventId   String?     @unique
+  usageEvent     UsageEvent? @relation(fields: [usageEventId], references: [id])
+  type           LedgerType
+  amount         Decimal     @db.Decimal(12, 2)
+  currency       String
+  description    String
+  createdAt      DateTime    @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model AuditRecord {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String
+  entityType String
+  entityId   String
+  detail     Json
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+}
